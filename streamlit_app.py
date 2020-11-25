@@ -18,7 +18,7 @@ def get_df(i):
     df['ymax'] = np.tile(mu, N_samples) + 2*error
     return df
 
-N_samples, N_plot, T_plot = 3, 30, 300
+N_samples, N_plot, T_plot = 3, 40, 300
 x, y = np.array([(0, -0.3), (0.5, 0.2), (2.2, 0.5), (3, -0.4), (3.5, -0.6)]).T
 
 st.title("Samples from a Gaussian Process Posterior")
@@ -32,8 +32,8 @@ xlim = (x_plot.min(), x_plot.max())
 ylim = (y_plots.min(), y_plots.max())
 
 for i in range(1,T_plot):
-    progress_bar.progress(i/T_plot)
-    frame_text.text(f'Frame {i}/{T_plot}')
+    progress_bar.progress((i+1.)/T_plot)
+    frame_text.text(f'Frame {i+1}/{T_plot}')
     df = get_df(i)
     line = alt.Chart(df).mark_line().encode(
         alt.X('x', scale=alt.Scale(domain=xlim)),
