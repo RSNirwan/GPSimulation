@@ -1,7 +1,12 @@
 import numpy as np
 from scipy.linalg import cho_solve
 
-k_rbf = lambda x1, x2, l: np.exp(-0.5*np.square((x1-x2)/l))
+kernels ={
+        "Gaussian": lambda x1, x2, l: np.exp(-0.5*np.square((x1-x2)/l)),
+        "Exp": lambda x1, x2, l: np.exp(-0.5/l*np.fabs(x1-x2)),
+        "Matern32": lambda x1, x2, l: (1+np.sqrt(3)*np.fabs(x1-x2)/l)\
+                        *np.exp(-np.sqrt(3)*np.fabs(x1-x2)/l),
+    }
 
 def kernel(kernel_function, x1, x2):
     """
@@ -75,8 +80,10 @@ def get_mean_cov(kxx, ktt, x, y, x_plot, t_plot):
     diag: np.ndarray
         variance of each data input x
     """
-    Ctt = np.linalg.cholesky( kernel(ktt, t_plot, t_plot) )
-    Cxx = np.linalg.cholesky( kernel(kxx, x, x) )
+    gitter = lambda n: 1e-9*np.eye(n)
+    Ctt = np.linalg.cholesky( kernel(ktt, t_plot, t_plot) 
+                                + gitter(t_plot.shape[0]) )
+    Cxx = np.linalg.cholesky(kernel(kxx, x, x) + gitter(x.shape[0]))
     Kxsx = np.array( kernel(kxx, x_plot, x) )
     Kxsxs = np.array( kernel(kxx, x_plot, x_plot) )
 
@@ -94,7 +101,7 @@ def get_mean_cov(kxx, ktt, x, y, x_plot, t_plot):
     return mu, Ctt, Cxx_post, diag
 
 
-def get_posterior_samples(x, y, N_samples, N_plot, T_plot):
+def get_posterior_samples(x, y, N_samples, N_plot, T_plot, kernel_l, kernel_std, kernel_name):
     """
     get samples from a Gaussian random field.
     
@@ -110,6 +117,12 @@ def get_posterior_samples(x, y, N_samples, N_plot, T_plot):
         number of points to plot in the space direction
     N_plot: int
         number of points to plot in the time direction
+    kernel_l: float
+        lengthscale of the spacial kernel kxx
+    kernel_std: float
+        standard deviation of the spacial kernel kxx
+    kernel_name: str
+        one of ["Gaussian", "Exp"]
 
     Returns
     _______
@@ -122,8 +135,9 @@ def get_posterior_samples(x, y, N_samples, N_plot, T_plot):
     std: np.ndarray
         std of each point in x_plot (needed for plotting the uncertainty)
     """
-    ktt = lambda time1, time2: k_rbf(time1, time2, 1.)
-    kxx = lambda space1, space2: k_rbf(space1, space2, 0.5)
+    ktt = lambda time1, time2: kernels["Gaussian"](time1, time2, 1.)
+    kxx_ = kernels[kernel_name]
+    kxx = lambda space1, space2: kernel_std*kxx_(space1, space2, kernel_l)
 
     N = x.shape[0]
     x_plot = np.linspace(-1, 4, N_plot)
@@ -137,7 +151,8 @@ def get_posterior_samples(x, y, N_samples, N_plot, T_plot):
     y_plots = np.zeros((N_samples, N_plot, T_plot))
     for i in range(N_samples):
         eps = np.random.normal(size=cov_cho.shape[0])
-        y_plot = mu.reshape(-1,1) + restack_column_wise(cov_cho.dot(eps), N_plot)
+        y_plot = mu.reshape(-1,1) \
+                    + restack_column_wise(cov_cho.dot(eps), N_plot)
         y_plots[i, :] = y_plot
 
     return x_plot, y_plots, mu, std
