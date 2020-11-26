@@ -38,7 +38,7 @@ def stack_column_wise(A):
 
 
 def restack_column_wise(vec, N):
-    """ convenient name """
+    """ convenient name for 'restacking' a column wise stacked matrix """
     return vec.reshape(-1, N).T
 
 
