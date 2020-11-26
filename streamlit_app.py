@@ -20,7 +20,7 @@ kernel_std = st.sidebar.slider("Kernel std", 0.1, 2.0, 1., 0.1)
 kernel_name = st.sidebar.selectbox("Kernel function", 
         options=["Gaussian", "Matern32", "Exp"],
         index=0)
-N_plot = st.sidebar.slider("Number of evaluation in x", 30, 100, 50, 5)
+N_plot = st.sidebar.slider("Number of evaluation in x", 30, 80, 50, 5)
 data_points_option =[(0.0, -0.3),
                 (0.5, 0.2), 
                 (2.2, 0.5),
@@ -32,7 +32,7 @@ data_points = st.sidebar.multiselect("Observed data points",
 
 
 
-T_plot = 300 #time discretization
+T_plot = 150 #time discretization
 x, y = np.array(data_points).T
 x_plot, y_plots, mu, std = get_posterior_samples(x, y, N_samples, 
                         N_plot, T_plot, 

@@ -141,7 +141,7 @@ def get_posterior_samples(x, y, N_samples, N_plot, T_plot, kernel_l, kernel_std,
 
     N = x.shape[0]
     x_plot = np.linspace(-1, 4, N_plot)
-    t_plot = np.linspace(0, 100., T_plot)
+    t_plot = np.linspace(0, 50., T_plot)
 
     mu, Ctt, Cxx_post, diag = get_mean_cov(kxx, ktt, x, y, x_plot, t_plot)
     std = np.sqrt(ktt(0, 0))*np.sqrt(diag)
