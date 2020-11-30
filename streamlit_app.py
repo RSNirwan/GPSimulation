@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 import time
 
-from gpcode import get_posterior_samples
+from gpcode import get_samples
 
 
 # main page
@@ -32,11 +32,15 @@ data_points = st.sidebar.multiselect("Observed data points",
         default=data_points_option)
 
 
-# get the gp samples 
+# get gp samples
 T_plot = 150   # time discretization
-x, y = np.array(data_points).T   # training data points
-x_plot, y_plots, mu, std = get_posterior_samples(x, y, N_samples, 
-                        N_plot, T_plot, 
+if data_points:
+    x, y = np.array(data_points).T   # training data points
+else:
+    x, y = np.array([]), np.array([]) # prior is sampled
+
+x_plot, y_plots, mu, std = get_samples(x, y,
+                        N_samples, N_plot, T_plot,
                         kernel_l, kernel_std, kernel_name)
 # y_plots is of shape (N_samples, N_plot, T_plot)
 # we plot a frame for each t in [1, ..., T_plot]

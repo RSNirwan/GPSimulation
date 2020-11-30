@@ -83,6 +83,13 @@ def get_mean_cov(kxx, ktt, x, y, x_plot, t_plot):
     gitter = lambda n: 1e-9*np.eye(n)
     Ctt = np.linalg.cholesky( kernel(ktt, t_plot, t_plot) 
                                 + gitter(t_plot.shape[0]) )
+    if x.shape==(0,): # no data points
+        Cxx = np.linalg.cholesky( kernel(kxx, x_plot, x_plot)
+                                + gitter(x_plot.shape[0]) )
+        mu = np.zeros_like(x_plot)
+        diag = kxx(0., 0.)*np.ones_like(x_plot)
+        return mu, Ctt, Cxx, diag
+
     Cxx = np.linalg.cholesky(kernel(kxx, x, x) + gitter(x.shape[0]))
     Kxsx = np.array( kernel(kxx, x_plot, x) )
     Kxsxs = np.array( kernel(kxx, x_plot, x_plot) )
@@ -101,7 +108,7 @@ def get_mean_cov(kxx, ktt, x, y, x_plot, t_plot):
     return mu, Ctt, Cxx_post, diag
 
 
-def get_posterior_samples(x, y, N_samples, N_plot, T_plot, kernel_l, kernel_std, kernel_name):
+def get_samples(x, y, N_samples, N_plot, T_plot, kernel_l, kernel_std, kernel_name):
     """
     get samples from a Gaussian random field.
     
